@@ -1,0 +1,2 @@
+storageClassName: default # Залежить від налаштувань вашого AKS кластера
+storageSize: 1Gi

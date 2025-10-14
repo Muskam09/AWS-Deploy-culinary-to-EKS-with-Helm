@@ -1,0 +1,15 @@
+replicaCount: 1
+
+image:
+  repository: 294568841816.dkr.ecr.eu-central-1.amazonaws.com/frontend # Замініть на вашу ACR назву
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+
+containerPort: 3000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
