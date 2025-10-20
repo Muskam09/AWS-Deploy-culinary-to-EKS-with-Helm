@@ -6,7 +6,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   }
 
   role_arn = aws_iam_role.cluster.arn
-  version  = "1.31"
+  version  = "1.32"
 
   vpc_config {
     subnet_ids = [
@@ -101,12 +101,42 @@ resource "aws_eks_node_group" "node_group" {
   instance_types = ["t3.small"]
 
   scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 1
+    desired_size = 2 #2
+    max_size     = 3 #3
+    min_size     = 1 #1
+  }
+
+  launch_template {
+    id      = aws_launch_template.eks_nodes_lt.id
+    version = aws_launch_template.eks_nodes_lt.latest_version
   }
 }
 
+resource "aws_launch_template" "eks_nodes_lt" {
+
+  name_prefix = "${var.aws_eks_cluster_name}-lt-"
+
+
+  metadata_options {
+    http_put_response_hop_limit = 2
+    http_tokens                 = "required"
+  }
+
+  update_default_version = true
+}
+
+# resource "aws_iam_role_policy_attachment" "cluster_AmazonEBSCSIDriverPolicy" {
+#   # Ця політика містить всі необхідні дозволи (CreateVolume, AttachVolume і т.д.)
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+#   role       = aws_iam_role.cluster.name
+# }
+
+# resource "aws_iam_role_policy_attachment" "nodes_AmazonEBSCSIDriverPolicy" {
+#   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+
+#   # Прикріплюємо її до РОЛІ ВУЗЛІВ
+#   role       = aws_iam_role.nodes.name
+# }
 
 # resource "aws_eks_access_entry" "admin_user" {
 #   cluster_name  = aws_eks_cluster.eks_cluster.name

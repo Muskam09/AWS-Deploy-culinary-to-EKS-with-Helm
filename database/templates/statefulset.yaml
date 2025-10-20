@@ -1,3 +1,5 @@
+# database/templates/statefulset.yaml
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -8,7 +10,7 @@ spec:
   selector:
     matchLabels:
       app: postgres
-  template:
+  template: # <--- Починається шаблон Поду
     metadata:
       labels:
         app: postgres
@@ -30,7 +32,7 @@ spec:
         name: postgres-storage
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: {{ .Values.storageClassName }}
+        storageClassName: {{ .Values.storageClassName | quote }}
         resources:
           requests:
             storage: {{ .Values.storageSize }}

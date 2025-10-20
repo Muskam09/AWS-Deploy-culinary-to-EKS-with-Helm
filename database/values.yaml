@@ -1,2 +1,2 @@
-storageClassName: default # Залежить від налаштувань вашого AKS кластера
+storageClassName: "ebs-sc"
 storageSize: 1Gi

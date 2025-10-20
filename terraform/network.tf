@@ -14,6 +14,8 @@ resource "aws_subnet" "subnet1" {
   map_public_ip_on_launch = true
   tags = {
     Name = "subnet1"
+    "kubernetes.io.cluster/eks-cluster-smachno" = "shared"
+    "kubernetes.io.role/elb"                      = "1"
   }
 }
 resource "aws_subnet" "subnet2" {
@@ -23,6 +25,8 @@ resource "aws_subnet" "subnet2" {
   map_public_ip_on_launch = true
   tags = {
     Name = "subnet2"
+    "kubernetes.io.cluster/eks-cluster-smachno" = "shared"
+    "kubernetes.io.role/elb"                      = "1"
   }
 }
 resource "aws_subnet" "subnet3" {
@@ -32,6 +36,8 @@ resource "aws_subnet" "subnet3" {
   map_public_ip_on_launch = true
   tags = {
     Name = "subnet3"
+    "kubernetes.io.cluster/eks-cluster-smachno" = "shared"
+    "kubernetes.io.role/elb"                      = "1"
   }
 }
 
