@@ -13,9 +13,9 @@ resource "aws_subnet" "subnet1" {
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = true
   tags = {
-    Name = "subnet1"
+    Name                                        = "subnet1"
     "kubernetes.io.cluster/eks-cluster-smachno" = "shared"
-    "kubernetes.io.role/elb"                      = "1"
+    "kubernetes.io.role/elb"                    = "1"
   }
 }
 resource "aws_subnet" "subnet2" {
@@ -24,9 +24,9 @@ resource "aws_subnet" "subnet2" {
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = true
   tags = {
-    Name = "subnet2"
+    Name                                        = "subnet2"
     "kubernetes.io.cluster/eks-cluster-smachno" = "shared"
-    "kubernetes.io.role/elb"                      = "1"
+    "kubernetes.io.role/elb"                    = "1"
   }
 }
 resource "aws_subnet" "subnet3" {
@@ -35,9 +35,9 @@ resource "aws_subnet" "subnet3" {
   availability_zone       = "eu-central-1c"
   map_public_ip_on_launch = true
   tags = {
-    Name = "subnet3"
+    Name                                        = "subnet3"
     "kubernetes.io.cluster/eks-cluster-smachno" = "shared"
-    "kubernetes.io.role/elb"                      = "1"
+    "kubernetes.io.role/elb"                    = "1"
   }
 }
 
