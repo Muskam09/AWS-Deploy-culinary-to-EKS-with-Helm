@@ -101,9 +101,9 @@ resource "aws_eks_node_group" "node_group" {
   instance_types = ["t3.small"]
 
   scaling_config {
-    desired_size = 2 #2
+    desired_size = 3 #2
     max_size     = 3 #3
-    min_size     = 1 #1
+    min_size     = 4 #1
   }
 
   launch_template {

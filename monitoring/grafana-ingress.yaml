@@ -1,24 +1,22 @@
-{{- if .Values.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: frontend-ingress
+  name: grafana-ingress
+  namespace: monitoring
   annotations:
     alb.ingress.kubernetes.io/subnets: subnet-0ec5acd99a404b006,subnet-0b56cd4627314d060,subnet-032b41722dc0a8e59
+    alb.ingress.kubernetes.io/group.name: smachno-group
+    alb.ingress.kubernetes.io/group.order: '2'
     alb.ingress.kubernetes.io/scheme: internet-facing
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    alb.ingress.kubernetes.io/group.name: smachno-group # Назва групи
-    alb.ingress.kubernetes.io/group.order: '3'          # Пріоритет
 spec:
   ingressClassName: alb
   rules:
     - http:
         paths:
-          - path: /
+          - path: /grafana # Шлях, за яким буде доступна Grafana
             pathType: Prefix
             backend:
               service:
-                name: frontend-service
+                name: monitoring-grafana
                 port:
                   number: 80
-{{- end }}
