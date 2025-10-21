@@ -1,5 +1,3 @@
-backend
-frontend
 database/secrets.yaml
 helm-backend/secrets.yaml
 .terraform*

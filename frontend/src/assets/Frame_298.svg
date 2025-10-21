@@ -1,0 +1,15 @@
+<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48.000000" height="48.000000" fill="none" customFrame="url(#clipPath_4)">
+	<defs>
+		<clipPath id="clipPath_4">
+			<rect width="48.000000" height="48.000000" x="0.000000" y="0.000000" rx="16.000000" fill="rgb(255,255,255)" />
+		</clipPath>
+		<clipPath id="clipPath_5">
+			<rect width="24.000000" height="24.000000" x="12.000000" y="12.000000" fill="rgb(255,255,255)" />
+		</clipPath>
+	</defs>
+	<rect id="Frame 296" width="48.000000" height="48.000000" x="0.000000" y="0.000000" rx="16.000000" fill="rgb(232,242,242)" />
+	<g id="icon-park-outline:round" clip-path="url(#clipPath_5)" customFrame="url(#clipPath_5)">
+		<rect id="icon-park-outline:round" width="24.000000" height="24.000000" x="12.000000" y="12.000000" />
+		<path id="Vector" d="M24 34C18.4772 34 14 29.5228 14 24C14 18.4772 18.4772 14 24 14C29.5228 14 34 18.4772 34 24C34 29.5228 29.5228 34 24 34Z" stroke="rgb(51,113,121)" stroke-width="2" />
+	</g>
+</svg>
