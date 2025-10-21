@@ -1,34 +1,41 @@
-name: Terraform CI/CD
+name: Terraform Apply Infrastructure (AWS)
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'terraform/**'
+      - 'terraform/**' # Тільки якщо зміни у папці terraform
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'terraform/**' # Тільки якщо зміни у папці terraform
 
+# Дозволи для OIDC та коментарів у PR
 permissions:
   contents: read
-  id-token: write
+  id-token: write # Для автентифікації OIDC в AWS
+  pull-requests: write # Для коментарів з планом
 
 jobs:
   terraform:
-    name: 'Terraform Apply'
+    name: 'Terraform Plan & Apply'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./terraform
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          #Вказуйте ARN ролі, яку GitHub Actions має взяти на себе
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: eu-central-1 # Ваш регіон AWS
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -42,11 +49,35 @@ jobs:
       - name: Terraform Format & Validate
         run: |
           terraform fmt -check
-          terraform validate
+          terraform validate -no-color
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan
+        run: terraform plan -no-color -out=tfplan
+
+      - name: Add Plan to Pull Request Comment
+        # Цей крок виконується тільки для Pull Request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        env:
+          PLAN: "```hcl\n${{ steps.plan.outputs.stdout }}\n```"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Plan 📖
+
+            ${process.env.PLAN}
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        # Запускати тільки при пуші в main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve tfplan # Застосовуємо збережений план, щоб гарантувати відповідність

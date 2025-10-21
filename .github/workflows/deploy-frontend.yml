@@ -1,0 +1,89 @@
+name: Build and Deploy Frontend
+
+# --- Коли запускати ---
+on:
+  push:
+    branches: ["main"] # При пуші в гілку main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch: # Дозволяє запускати вручну
+
+# --- Змінні середовища ---
+env:
+  AWS_REGION: eu-central-1 # регіон
+  ECR_REPOSITORY: frontend # Назва ECR для беку
+  EKS_CLUSTER_NAME: eks-cluster-smachno # Назва  EKS кластера
+  HELM_CHART_PATH: ./helm-frontend # Шлях до Helm-чарту бекенду
+  HELM_RELEASE_NAME: frontend-release # Назва Helm-релізу
+
+# --- Дозволи для OIDC ---
+permissions:
+  contents: read
+  id-token: write # Необхідно для автентифікації OIDC в AWS
+
+jobs:
+  # --- Завдання 1: Збірка та завантаження образу ---
+  build_and_push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.build-image.outputs.image_tag }}
+      image_repository_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Вкажи ARN ролі, яку GitHub Actions має використовувати
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Image to Amazon ECR
+        id: build-image # Цей крок зберігає тег образу
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }} # Використовуємо хеш коміту як унікальний тег
+        run: |
+          echo "Building image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./backend
+          echo "Pushing image..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT # Зберігаємо тег для наступного завдання
+
+  # --- Завдання 2: Розгортання в EKS ---
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    needs: build_and_push # Тільки якщо все правильно збілдалось
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get EKS Kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART_PATH }} \
+            --set image.repository=${{ needs.build_and_push.outputs.image_repository_uri }} \
+            --set image.tag=${{ needs.build_and_push.outputs.image_tag }} \
+            --wait # Чекати, доки деплоймент завершиться успішно
